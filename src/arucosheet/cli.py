@@ -6,25 +6,19 @@ import os
 import math
 
 # --- SCRIPT CONSTANTS ---
+# ... (Questa parte rimane invariata) ...
 ARUCO_DICTIONARY = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_1000)
 PAPER_FORMAT = 'A4'
 DPI = 300
-MARGIN_CM = 1.0  # 1 cm minimum margin on each side of the paper
+MARGIN_CM = 1.0
 
 def setup_parser():
-    """Configures the command-line argument parser."""
+    # ... (Questa funzione rimane invariata) ...
     parser = argparse.ArgumentParser(
         description="Generates a print-ready PDF sheet of ArUco markers.",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument(
-        '-s', '--size',
-        type=int,
-        required=True,
-        help="The side length of each marker in millimeters (mm)."
-    )
-    
-    # --- Mutually exclusive group: user must choose one layout mode ---
+    # ... (tutti gli argomenti rimangono invariati) ...
     layout_group = parser.add_mutually_exclusive_group(required=True)
     layout_group.add_argument(
         '-g', '--grid',
@@ -38,7 +32,6 @@ def setup_parser():
         action='store_true',
         help="Automatically calculate the maximum number of markers that can fit on the page."
     )
-    
     parser.add_argument(
         '--start-id',
         type=int,
@@ -52,56 +45,53 @@ def setup_parser():
     )
     return parser
 
+
 def cm_to_pixels(cm, dpi):
-    """Converts centimeters to pixels based on the given DPI."""
+    # ... (Questa funzione rimane invariata) ...
     return int((cm / 2.54) * dpi)
 
 def create_cell_image(marker_id, marker_size_px, show_id=True):
-    """
-    Generates a composite image: the marker and, optionally, its ID label.
-    """
+    # ... (Questa funzione rimane invariata) ...
     # 1. Generate the base ArUco marker image
     marker_img_np = cv2.aruco.generateImageMarker(
         ARUCO_DICTIONARY, marker_id, marker_size_px, borderBits=1
     )
     marker_img = Image.fromarray(marker_img_np).convert('RGB')
-
     if not show_id:
         return marker_img
-
-    # 2. If showing ID, create extra space for the text label
+    # ... (il resto della funzione rimane invariato) ...
     text_area_height_cm = 1.0  # Fixed 1cm height for the label area
     text_area_height_px = cm_to_pixels(text_area_height_cm, DPI)
     total_height = marker_size_px + text_area_height_px
-    
     composite_img = Image.new('RGB', (marker_size_px, total_height), 'white')
     composite_img.paste(marker_img, (0, 0))
-    
-    # 3. Draw the ID text onto the composite image
     draw = ImageDraw.Draw(composite_img)
     text = f"ID: {marker_id}"
-    
     try:
         font_size = int(text_area_height_px * 0.6)
         font = ImageFont.truetype("DejaVuSans.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
-
     text_bbox = draw.textbbox((0, 0), text, font=font)
     text_width, text_height = text_bbox[2] - text_bbox[0], text_bbox[3] - text_bbox[1]
-    
     text_x = (marker_size_px - text_width) / 2
     text_y = marker_size_px + (text_area_height_px - text_height) / 2
-    
     draw.text((text_x, text_y), text, font=font, fill='black')
-    
     return composite_img
 
-def main(args):
+
+# --- MODIFICA CHIAVE QUI ---
+def main():
     """Main function to orchestrate the PDF generation."""
+    
+    # 1. La logica di parsing viene spostata DENTRO la funzione main
+    parser = setup_parser()
+    args = parser.parse_args()
+    
+    # Da qui in poi, il codice è lo stesso di prima, perché ora ha accesso all'oggetto 'args'
     print("Starting ArUco sheet generation...")
 
-    # --- 1. Convert units and calculate cell dimensions ---
+    # ... (tutta la logica esistente della vecchia funzione main rimane qui) ...
     marker_size_cm = args.size / 10.0
     show_id = not args.hide_id
     
@@ -115,7 +105,6 @@ def main(args):
     cell_width_cm = marker_size_cm
     cell_height_cm = marker_size_cm + text_area_height_cm
 
-    # --- 2. Determine grid layout (Auto-fit or User-defined) ---
     if args.auto_fit:
         cols = math.floor(printable_width_cm / cell_width_cm)
         rows = math.floor(printable_height_cm / cell_height_cm)
@@ -135,37 +124,27 @@ def main(args):
             print("Please try a smaller grid, a smaller marker size, or use --auto-fit mode.")
             return
 
-    # --- 3. Generate the marker images ---
     num_markers = rows * cols
     ids_to_print = list(range(args.start_id, args.start_id + num_markers))
-    
     page_width_px = cm_to_pixels(page_width_cm, DPI)
     page_height_px = cm_to_pixels(page_height_cm, DPI)
     marker_size_px = cm_to_pixels(marker_size_cm, DPI)
-    
     sheet = Image.new('RGB', (page_width_px, page_height_px), 'white')
-
-    # Calculate spacing to center the grid on the page
     total_grid_width_px = cols * marker_size_px
     total_grid_height_px = rows * cm_to_pixels(cell_height_cm, DPI)
     gap_x = (page_width_px - total_grid_width_px) / (cols + 1)
     gap_y = (page_height_px - total_grid_height_px) / (rows + 1)
-
     marker_index = 0
     for r in range(rows):
         for c in range(cols):
             marker_id = ids_to_print[marker_index]
             cell_img = create_cell_image(marker_id, marker_size_px, show_id)
-            
             cell_width_px, cell_height_px = cell_img.size
             pos_x = int(gap_x * (c + 1) + c * marker_size_px)
             pos_y = int(gap_y * (r + 1) + r * cell_height_px)
-            
             print(f"  - Generating marker ID {marker_id}...")
             sheet.paste(cell_img, (pos_x, pos_y))
             marker_index += 1
-
-    # --- 4. Save the final PDF ---
     id_tag = 'ID' if show_id else 'noID'
     output_filename = f"ArUcoSheet_{rows}x{cols}_{args.size}mm_{id_tag}.pdf"
     try:
@@ -175,8 +154,6 @@ def main(args):
     except Exception as e:
         print(f"\nAn error occurred while saving the PDF: {e}")
 
-
+# --- MODIFICA SEMPLIFICATA QUI ---
 if __name__ == '__main__':
-    parser = setup_parser()
-    args = parser.parse_args()
-    main(args)
+    main()
