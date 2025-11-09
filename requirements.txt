@@ -1,0 +1,10 @@
+# Python dependencies for ArucoSheet
+
+# Used for generating ArUco markers and core computer vision functionalities
+opencv-contrib-python
+
+# Used for numerical operations, primarily by OpenCV
+numpy
+
+# Used for creating and manipulating images, and for saving the final PDF
+Pillow
