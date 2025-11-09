@@ -152,15 +152,37 @@ arucosheet --help
 
 This will display the following helpful message:
 ```
-usage: arucosheet [-h] -s SIZE (-g ROWS COLS | -a) [--start-id START_ID] [--hide-id]
+usage: arucosheet [-h] -s SIZE [-o OUTPUT] (-g ROWS COLS | -a) [--start-id START_ID] [--hide-id]
 
 Generates a print-ready PDF sheet of ArUco markers.
 
 optional arguments:
   -h, --help            show this help message and exit
   -s SIZE, --size SIZE  The side length of each marker in millimeters (mm).
+  -o OUTPUT, --output OUTPUT
+                        Specify the output path for the generated PDF. 
+                        Can be a directory (e.g., 'my_pdfs/') or a full file path (e.g., 'my_pdfs/custom.pdf').
   -g ROWS COLS, --grid ROWS COLS
                         Specify the exact grid layout (e.g., 3 2 for 3 rows and 2 columns).
   -a, --auto-fit        Automatically calculate the maximum number of markers that can fit on the page.
   --start-id START_ID   The ID of the first marker in the sequence. Default: 0.
-  --hide-id             If set, the ID label below each marker will not be shown.```
+  --hide-id             If set, the ID label below each marker will not be shown.
+```
+
+### Example 6: Saving to a Specific Location
+
+Use the `-o` or `--output` flag to control where the PDF file is saved.
+
+**a) Save to a specific directory:**
+
+```bash
+arucosheet --size 50 --auto-fit -o output_folder/
+```
+*This will create the `output_folder` if it doesn't exist and save the PDF inside with its default, auto-generated name.*
+
+**b) Save with a specific filename:**
+
+```bash
+arucosheet --size 80 --grid 1 1 -o my_markers/single_marker.pdf
+```
+*This will create the `my_markers` directory if needed and save the file with the exact name `single_marker.pdf`.*
