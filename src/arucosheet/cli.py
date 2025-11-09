@@ -18,14 +18,19 @@ def setup_parser():
         formatter_class=argparse.RawTextHelpFormatter
     )
     
-    # --- FIX: Re-added the missing --size argument ---
     parser.add_argument(
         '-s', '--size',
         type=int,
         required=True,
         help="The side length of each marker in millimeters (mm)."
     )
-    # --- END FIX ---
+
+    parser.add_argument(
+        '-o', '--output',
+        type=str,
+        default=None,
+        help="Specify the output path for the generated PDF. \nCan be a directory (e.g., 'my_pdfs/') or a full file path (e.g., 'my_pdfs/custom.pdf')."
+    )
     
     layout_group = parser.add_mutually_exclusive_group(required=True)
     layout_group.add_argument(
@@ -133,6 +138,27 @@ def main():
             print("The specified grid and marker size exceeds the printable area of an A4 page.")
             print("Please try a smaller grid, a smaller marker size, or use --auto-fit mode.")
             return
+        
+    id_tag = 'ID' if not args.hide_id else 'noID'
+    default_filename = f"ArUcoSheet_{rows}x{cols}_{args.size}mm_{id_tag}.pdf"
+
+    if args.output:
+        # L'utente ha fornito un percorso di output
+        if args.output.lower().endswith('.pdf'):
+            # L'utente ha specificato un percorso completo di file
+            output_path = args.output
+            # Assicurati che la directory genitore esista
+            output_dir = os.path.dirname(output_path)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+        else:
+            # L'utente ha specificato solo una directory
+            output_dir = args.output
+            os.makedirs(output_dir, exist_ok=True)
+            output_path = os.path.join(output_dir, default_filename)
+    else:
+        # Nessun percorso specificato, salva nella directory corrente
+        output_path = default_filename
 
     num_markers = rows * cols
     ids_to_print = list(range(args.start_id, args.start_id + num_markers))
@@ -163,11 +189,11 @@ def main():
             marker_index += 1
 
     id_tag = 'ID' if show_id else 'noID'
-    output_filename = f"ArUcoSheet_{rows}x{cols}_{args.size}mm_{id_tag}.pdf"
+    # output_filename = f"ArUcoSheet_{rows}x{cols}_{args.size}mm_{id_tag}.pdf"
     try:
-        sheet.save(output_filename, "PDF", resolution=DPI)
+        sheet.save(output_path, "PDF", resolution=DPI)
         print("\nGeneration successful!")
-        print(f"PDF file saved as: '{os.path.abspath(output_filename)}'")
+        print(f"PDF file saved as: '{os.path.abspath(output_path)}'")
     except Exception as e:
         print(f"\nAn error occurred while saving the PDF: {e}")
 

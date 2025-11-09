@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ArucoSheet"
-version = "1.0.2"
+version = "1.1.0"
 authors = [
-  { name="Your Name", email="your@email.com" },
+  { name="Giuliano Ranauro", email="ranaurogln@email.com" },
 ]
 description = "A powerful command-line tool to generate customizable, print-ready PDF sheets of ArUco markers."
 readme = "README.md"
@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/ArucoSheet"
-Issues = "https://github.com/your-username/ArucoSheet/issues"
+Homepage = "https://github.com/follen99/ArucoSheet"
+Issues = "https://github.com/follen99/ArUcoSheet/issues"
 
 # This part makes your script a command-line tool!
 [project.scripts]
