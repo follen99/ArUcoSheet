@@ -1,5 +1,7 @@
 # ArucoSheet
 
+<img src="https://raw.githubusercontent.com/follen99/ArUcoSheet/refs/heads/main/.github/logo.png" style="zoom:50%;" />
+
 A powerful command-line tool to generate highly customizable, print-ready PDF sheets of ArUco markers for computer vision applications.
 
 ## Features
@@ -12,6 +14,18 @@ A powerful command-line tool to generate highly customizable, print-ready PDF sh
 -   **High-Quality PDF Output**: Generates a 300 DPI PDF, perfect for crisp, accurate printing.
 
 ## Installation
+
+### Via PyPi
+
+Find the project [here](https://pypi.org/project/ArucoSheet/).
+
+You can install the tool using the command:
+
+```shell
+pip install ArucoSheet
+```
+
+### Via source code
 
 1.  **Clone the repository:**
     ```bash
