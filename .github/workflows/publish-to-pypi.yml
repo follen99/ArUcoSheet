@@ -1,0 +1,45 @@
+# Nome del workflow che apparirà nella tab "Actions" di GitHub
+name: Publish Python Package to PyPI
+
+# Trigger: quando viene eseguito questo workflow.
+# Questo si attiva quando una nuova "Release" viene pubblicata su GitHub.
+on:
+  release:
+    types: [published]
+
+# Definisce i job da eseguire. In questo caso, solo uno: "deploy".
+jobs:
+  deploy:
+    # Il tipo di macchina virtuale su cui eseguire il job
+    runs-on: ubuntu-latest
+
+    # Permessi: Concede al job il permesso di richiedere un token OIDC.
+    # Questo è il cuore del "Trusted Publishing".
+    permissions:
+      id-token: write
+
+    # I passaggi che compongono il job
+    steps:
+      # 1. Scarica il codice dal repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Imposta un ambiente Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # Puoi cambiare la versione se necessario
+
+      # 3. Installa i tool per il build del pacchetto
+      - name: Install build dependencies
+        run: pip install build
+
+      # 4. Costruisce il pacchetto (crea i file .whl e .tar.gz nella cartella /dist)
+      - name: Build package
+        run: python -m build
+
+      # 5. Pubblica il pacchetto su PyPI utilizzando il Trusted Publishing
+      # Questa action è mantenuta ufficialmente dalla Python Packaging Authority (PyPA).
+      # Non sono necessari username, password o token API.
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
